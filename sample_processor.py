@@ -22,6 +22,25 @@ class SampleProcessor:
     def change_amplitude(self, factor):
         self.audio_data = np.int16(self.audio_data * factor)
         return self
+    
+    def reverberate(self, factor, overwrite=False):
+        delay = int(0.1 * self.params.framerate)
+        reverb = np.zeros_like(self.audio_data)
+    
+        for i in range(len(self.audio_data)):
+            reverb[i] = self.audio_data[i] + (self.audio_data[i - delay] * factor if i >= delay else 0)
+    
+        if overwrite:
+            self.audio_data = reverb
+    
+        return self
+
+    def convolution(self, kernel):
+        kernel = np.array(kernel)
+        convolved_data = np.convolve(self.audio_data, kernel)
+        convolved_data = convolved_data / np.max(np.abs(convolved_data)) * 32767
+        
+        return self
 
     def show_info(self):
         print("Number of frames:", self.params.nframes)
